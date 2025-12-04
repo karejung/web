@@ -48,18 +48,24 @@
   "textures": [
     {
       "sampler": 0,
+      "source": 0,
       "extensions": {
-        "EXT_texture_webp": {
-          "source": 0
+        "KHR_texture_basisu": {
+          "source": 1
         }
       }
     }
   ],
   "images": [
     {
-      "name": "retopoBed_Baked",
+      "name": "retopoBed_Baked_webp",
       "mimeType": "image/webp",
       "uri": "texture/retopoBed_Baked.webp"
+    },
+    {
+      "name": "retopoBed_Baked_ktx2",
+      "mimeType": "image/ktx2",
+      "uri": "texture/retopoBed_Baked.ktx2"
     }
   ],
   "buffers": [
@@ -135,11 +141,10 @@
   ],
   "scene": 0,
   "extensionsUsed": [
-    "EXT_texture_webp",
+    "KHR_texture_basisu",
     "KHR_draco_mesh_compression"
   ],
   "extensionsRequired": [
-    "EXT_texture_webp",
     "KHR_draco_mesh_compression"
   ]
 }
