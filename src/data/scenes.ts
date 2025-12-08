@@ -87,7 +87,7 @@ export const scenesData: SceneConfig[] = [
         },
         {
           type: 'floor',
-          meshPath: "/gltf/1/texture/floormesh.glb",
+          meshPath: "/gltf/1/texture/reflector.glb",
           position: [0, 0.01, 0],
           rotation: [-Math.PI / 2, 0, 0],
           resolution: 1024,
@@ -96,6 +96,42 @@ export const scenesData: SceneConfig[] = [
           opacity: 0.05,
           roughness: 0.8,
           metalness: 0.1
+        }
+      ]
+    }
+  },
+  {
+    id: "2",
+    title: "Scene 2",
+    location: "Location",
+    model: {
+      component: "2",
+      scale: 1,
+      position: [0, 0, 0],
+      rotation: [0, 0, 0],
+    },
+    reflector: {
+      enabled: true,
+      items: [
+        {
+          type: 'plane',
+          position: [3.15, 1.85, 0],
+          rotation: [0, -Math.PI / 2, 0],
+          args: [2, 3.26],
+          mixStrength: 0.5,
+          color: "#222222",
+          overlayOpacity: 0,
+          overlayOffset: [0, 0, -0.01]
+        },
+        {
+          type: 'plane',
+          position: [-1.64, 0.72, -2.31],
+          rotation: [-Math.PI / 24, 0, Math.PI / 1],
+          args: [0.84, 1.43],
+          mixStrength: 0.5,
+          color: "#222222",
+          overlayOpacity: 0,
+          overlayOffset: [0, 0, -0.01]
         }
       ]
     }

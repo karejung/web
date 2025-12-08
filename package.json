@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "compress": "node scripts/draco-compress.js",
-    "compress:ktx2": "node scripts/ktx2-compress.js",
+    "compress": "node compressors/draco-compress.js",
+    "compress:ktx2": "node compressors/ktx2-compress.js",
     "compress:all": "npm run compress && npm run compress:ktx2"
   },
   "dependencies": {

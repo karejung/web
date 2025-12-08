@@ -12,8 +12,8 @@ import { scenesData } from "../data/scenes";
 const CAMERA_CONFIG = {
   fov: 1,
   position: [5 * 29, 6.5 * 29, -10 * 29] as [number, number, number],
-  near: 150,
-  far: 800,
+  near: 100,
+  far: 1000,
   zoom: 1
 };
 
@@ -42,8 +42,8 @@ export default function Scene() {
         <Environment preset="city" environmentIntensity={0.75} />
         
         <Suspense fallback={null}>
-          <Model config={scenesData[0].model} />
-          <Reflector items={scenesData[0].reflector?.items || []} />
+          <Model config={scenesData[1].model} />
+          <Reflector items={scenesData[1].reflector?.items || []} />
         </Suspense>
 
         <OrbitControls 
@@ -53,8 +53,6 @@ export default function Scene() {
           makeDefault 
           target={[0, 1.5, 0]}
           maxPolarAngle={Math.PI / 2}
-          minAzimuthAngle={-Math.PI / -2}
-          maxAzimuthAngle={Math.PI / -2}
         />
       </Canvas>
     </div>

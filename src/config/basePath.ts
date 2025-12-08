@@ -1,2 +1,2 @@
-export const BASE_PATH = process.env.NODE_ENV === 'production' ? '/functions' : '';
+export const BASE_PATH = process.env.NODE_ENV === 'production' ? '/web' : '';
 

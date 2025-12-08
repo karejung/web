@@ -32,7 +32,11 @@ export function Model({ config, ...props }: ModelProps) {
     // KTX2 로더 설정 (WebGPU 및 WebGL 지원)
     const ktx2Loader = new KTX2Loader()
     ktx2Loader.setTranscoderPath('/basis/')
-    ktx2Loader.detectSupport(gl)
+    
+    // gl이 준비되어 있는 경우에만 detectSupport 호출
+    if (gl && gl.capabilities) {
+      ktx2Loader.detectSupport(gl)
+    }
     
     // 워커 제한 설정 (선택적, 성능 최적화)
     ktx2Loader.setWorkerLimit(2)
@@ -73,7 +77,4 @@ export function Model({ config, ...props }: ModelProps) {
     </group>
   )
 }
-
-// 모델 프리로드
-useGLTF.preload(`${BASE_PATH}/gltf/1/model_draco.gltf`)
 

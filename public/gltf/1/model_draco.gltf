@@ -12,7 +12,7 @@
     {
       "type": "VEC3",
       "componentType": 5126,
-      "count": 27210,
+      "count": 27120,
       "max": [
         1.68313729763031,
         2.514625310897827,
@@ -25,16 +25,21 @@
       ]
     },
     {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 27120
+    },
+    {
       "type": "VEC2",
       "componentType": 5126,
-      "count": 27210
+      "count": 27120
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteOffset": 0,
-      "byteLength": 82989
+      "byteLength": 120128
     }
   ],
   "samplers": [
@@ -48,10 +53,9 @@
   "textures": [
     {
       "sampler": 0,
-      "source": 0,
       "extensions": {
-        "KHR_texture_basisu": {
-          "source": 1
+        "EXT_texture_webp": {
+          "source": 0
         }
       }
     }
@@ -71,12 +75,12 @@
   "buffers": [
     {
       "uri": "model.bin",
-      "byteLength": 82989
+      "byteLength": 120128
     }
   ],
   "materials": [
     {
-      "name": "retopoBed_Baked",
+      "name": "retopoBed_Baked_Baked.002",
       "pbrMetallicRoughness": {
         "baseColorFactor": [
           0,
@@ -97,12 +101,13 @@
   ],
   "meshes": [
     {
-      "name": "Cube.020",
+      "name": "Cube.009",
       "primitives": [
         {
           "attributes": {
             "POSITION": 1,
-            "TEXCOORD_0": 2
+            "NORMAL": 2,
+            "TEXCOORD_0": 3
           },
           "mode": 4,
           "material": 0,
@@ -112,7 +117,8 @@
               "bufferView": 0,
               "attributes": {
                 "POSITION": 0,
-                "TEXCOORD_0": 1
+                "NORMAL": 1,
+                "TEXCOORD_0": 2
               }
             }
           }
@@ -122,7 +128,7 @@
   ],
   "nodes": [
     {
-      "name": "retopoBed_Baked_Baked2",
+      "name": "model",
       "translation": [
         0.06686270236968994,
         -0.014625309966504574,
@@ -141,10 +147,11 @@
   ],
   "scene": 0,
   "extensionsUsed": [
-    "KHR_texture_basisu",
+    "EXT_texture_webp",
     "KHR_draco_mesh_compression"
   ],
   "extensionsRequired": [
+    "EXT_texture_webp",
     "KHR_draco_mesh_compression"
   ]
 }
