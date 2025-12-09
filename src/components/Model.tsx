@@ -4,7 +4,6 @@ import { useEffect } from 'react'
 import { DRACOLoader } from 'three-stdlib'
 import { KTX2Loader } from 'three-stdlib'
 import { BASE_PATH } from '@/config/basePath'
-import { logModelLoadInfo } from '@/config/loadConsole'
 import type { ModelConfig } from '@/data/scenes'
 
 type ModelProps = React.JSX.IntrinsicElements['group'] & {
@@ -55,17 +54,6 @@ export function Model({ config, children, ...props }: ModelProps) {
     }
   })
 
-  // 모델 로드 후 정보 출력 (개발 모드, 한 번만)
-  useEffect(() => {
-    if (scene && !hasLoggedModelInfo) {
-      hasLoggedModelInfo = true
-      
-      // 약간의 딜레이를 주어 모든 리소스가 로드되도록 함
-      setTimeout(() => {
-        logModelLoadInfo(scene, gl)
-      }, 100)
-    }
-  }, [scene, gl])
 
   return (
     <group 
