@@ -17,7 +17,7 @@ export function Model({ config, children, ...props }: ModelProps) {
   const { scene } = useGLTF(modelPath, true, undefined, (loader) => {
     // Draco 로더 설정
     const dracoLoader = new DRACOLoader()
-    dracoLoader.setDecoderPath('/draco/')
+    dracoLoader.setDecoderPath(`${BASE_PATH}/draco/`)
     dracoLoader.setDecoderConfig({ type: 'wasm' })
     loader.setDRACOLoader(dracoLoader)
     
