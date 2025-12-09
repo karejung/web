@@ -106,9 +106,9 @@ export const scenesData: SceneConfig[] = [
     location: "Location",
     model: {
       component: "2",
-      scale: 1,
+      scale: 0.75,
       position: [0, 0, 0],
-      rotation: [0, 0, 0],
+      rotation: [0, -Math.PI / 2, 0],
     },
     reflector: {
       enabled: true,

@@ -9,12 +9,13 @@ import type { ModelConfig } from '@/data/scenes'
 
 type ModelProps = React.JSX.IntrinsicElements['group'] & {
   config: ModelConfig
+  children?: React.ReactNode
 }
 
 // 로그 표시 여부 플래그 (한 번만 표시)
 let hasLoggedModelInfo = false
 
-export function Model({ config, ...props }: ModelProps) {
+export function Model({ config, children, ...props }: ModelProps) {
   // 렌더러 가져오기
   const { gl } = useThree()
   
@@ -67,13 +68,14 @@ export function Model({ config, ...props }: ModelProps) {
   }, [scene, gl])
 
   return (
-    <group {...props}>
-      <primitive 
-        object={scene} 
-        position={config.position}
-        rotation={config.rotation}
-        scale={config.scale}
-      />
+    <group 
+      {...props}
+      position={config.position}
+      rotation={config.rotation}
+      scale={config.scale}
+    >
+      <primitive object={scene} />
+      {children}
     </group>
   )
 }

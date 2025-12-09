@@ -42,8 +42,9 @@ export default function Scene() {
         <Environment preset="city" environmentIntensity={0.75} />
         
         <Suspense fallback={null}>
-          <Model config={scenesData[1].model} />
-          <Reflector items={scenesData[1].reflector?.items || []} />
+          <Model config={scenesData[1].model}>
+            <Reflector items={scenesData[1].reflector?.items || []} />
+          </Model>
         </Suspense>
 
         <OrbitControls 
