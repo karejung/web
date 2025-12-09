@@ -54,6 +54,9 @@
     {
       "sampler": 0,
       "extensions": {
+        "KHR_texture_basisu": {
+          "source": 1
+        },
         "EXT_texture_webp": {
           "source": 0
         }
@@ -148,10 +151,10 @@
   "scene": 0,
   "extensionsUsed": [
     "EXT_texture_webp",
-    "KHR_draco_mesh_compression"
+    "KHR_draco_mesh_compression",
+    "KHR_texture_basisu"
   ],
   "extensionsRequired": [
-    "EXT_texture_webp",
     "KHR_draco_mesh_compression"
   ]
 }
