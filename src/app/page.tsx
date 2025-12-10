@@ -31,7 +31,22 @@ function LoadingManager({ children }: { children: React.ReactNode }) {
 export default function Home() {
   return (
     <LoadingManager>
+      {/* 3D Scene - fixed 배경 */}
       <Scene />
+      
+      {/* 스크롤 스냅 컨테이너 */}
+      <div 
+        className="h-screen overflow-y-auto snap-y snap-mandatory"
+        style={{ scrollBehavior: 'smooth' }}
+      >
+        {/* 첫 번째 섹션 - 3D 씬 영역 (스냅 포인트) */}
+        <div className="h-screen w-screen snap-start snap-always" />
+
+        {/* 두 번째 섹션 - 검은색 오버레이 (스냅 포인트) */}
+        <div className="h-screen w-screen bg-black mix-blend-difference snap-start snap-always">
+          <h3 className="text-center text-white text-4xl font-bold">Hello World</h3>
+        </div>
+      </div>
     </LoadingManager>
   );
 }

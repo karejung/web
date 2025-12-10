@@ -19,7 +19,7 @@ const CAMERA_CONFIG = {
 
 export default function Scene() {
   return (
-    <div className="w-screen h-screen">
+    <div className="fixed top-0 left-0 w-screen h-screen -z-10">
       <Canvas 
         camera={{
           position: CAMERA_CONFIG.position,
@@ -42,8 +42,8 @@ export default function Scene() {
         <Environment preset="city" environmentIntensity={0.75} />
         
         <Suspense fallback={null}>
-          <Model config={scenesData[1].model}>
-            <Reflector items={scenesData[1].reflector?.items || []} />
+          <Model config={scenesData[0].model}>
+            <Reflector items={scenesData[0].reflector?.items || []} />
           </Model>
         </Suspense>
 
