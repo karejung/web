@@ -6,7 +6,7 @@ import { OrbitControls, Environment } from "@react-three/drei";
 import { Model } from "./Model";
 import { Reflector } from "./Reflector";
 import * as THREE from "three/webgpu";
-import { scenesData } from "../data/scenes";
+import { scenesData } from "@/data/scenes";
 
 // 카메라 설정 상수
 const CAMERA_CONFIG = {
