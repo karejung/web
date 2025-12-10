@@ -131,14 +131,30 @@ export function useScreenSize(): ResponsiveInfo {
     return 0.7;
   }, [windowSize.width]);
 
-  // 화면 너비에 따른 Y축 위치 오프셋 계산
+  // 화면 너비와 높이에 따른 Y축 위치 오프셋 계산
   const getPositionYOffset = useCallback((): number => {
-    const { width } = windowSize;
+    const { width, height } = windowSize;
+    const aspectRatio = width / height;
+    
+    // 세로로 긴 모바일 화면 (aspectRatio < 0.75)
+    if (aspectRatio < 0.75) {
+      // 매우 긴 모바일 화면 (예: 주소창이 숨겨진 상태)
+      if (height > 800) return 0.3;
+      if (height > 700) return 0.2;
+      return 0.15;
+    }
+    
+    // 태블릿이나 가로 모드
+    if (aspectRatio < 1.3) {
+      return 0;
+    }
+    
+    // 데스크톱 화면
     if (width > 1440) return -0.3;
     if (width > 1024) return -0.2;
     if (width > 768) return -0.1;
     return 0;
-  }, [windowSize.width]);
+  }, [windowSize.width, windowSize.height]);
 
   // 화면 크기에 따라 스케일을 조정
   const getResponsiveScale = useCallback((baseScale: number): number => {
