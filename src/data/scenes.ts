@@ -106,7 +106,7 @@ export const scenesData: SceneConfig[] = [
     location: "Location",
     model: {
       component: "2",
-      scale: 0.65,
+      scale: 0.615,
       position: [0, 0, 0],
       rotation: [0, -Math.PI / 2, 0],
     },

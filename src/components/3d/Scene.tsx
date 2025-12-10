@@ -31,12 +31,13 @@ const SPRING_CONFIG = {
 
 interface ModelGroupProps {
   screenWidth: number;
+  screenHeight: number;
 }
 
 /**
  * 모델 그룹 컴포넌트 - Canvas 내부에서 사용
  */
-function ModelGroup({ screenWidth }: ModelGroupProps) {
+function ModelGroup({ screenWidth, screenHeight }: ModelGroupProps) {
   const currentIndex = useSceneStore((state) => state.currentIndex);
   
   // 화면 크기에 따른 Y 간격 계산
@@ -70,6 +71,7 @@ function ModelGroup({ screenWidth }: ModelGroupProps) {
               index={index}
               currentIndex={currentIndex}
               screenWidth={screenWidth}
+              screenHeight={screenHeight}
             >
               {/* 현재 모델일 때만 Reflector 렌더링 */}
               {index === currentIndex && (
@@ -85,7 +87,7 @@ function ModelGroup({ screenWidth }: ModelGroupProps) {
 
 export default function Scene() {
   const isBlurred = useSceneStore((state) => state.isBlurred);
-  const { width } = useScreenSize(); // Canvas 외부에서 호출
+  const { width, height } = useScreenSize(); // Canvas 외부에서 호출
   const { 
     containerRef, 
     handleTouchStart, 
@@ -122,7 +124,7 @@ export default function Scene() {
         <color attach="background" args={["#111"]} />
         <Environment preset="city" environmentIntensity={0.75} />
         
-        <ModelGroup screenWidth={width} />
+        <ModelGroup screenWidth={width} screenHeight={height} />
       </Canvas>
       
       {/* 그라디언트 오버레이 */}

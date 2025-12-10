@@ -20,17 +20,19 @@ type ModelProps = React.JSX.IntrinsicElements['group'] & {
   index: number
   currentIndex: number
   screenWidth: number
+  screenHeight: number
   children?: React.ReactNode
 }
 
-export function Model({ config, index, currentIndex, screenWidth, children, ...props }: ModelProps) {
+export function Model({ config, index, currentIndex, screenWidth, screenHeight, children, ...props }: ModelProps) {
   const { gl, camera } = useThree()
   const modelPath = `${BASE_PATH}/gltf/${config.component}/model_draco.gltf`
   
   const isCurrentModel = index === currentIndex
   
-  // screenWidth를 prop으로 받아서 사용
+  // screenWidth, screenHeight를 prop으로 받아서 사용
   const width = screenWidth
+  const height = screenHeight
   
   const { scene } = useGLTF(modelPath, true, undefined, (loader) => {
     // Draco 로더 설정
@@ -62,13 +64,29 @@ export function Model({ config, index, currentIndex, screenWidth, children, ...p
     return 0.7
   }, [width])
   
-  // 화면 크기에 따른 Y 오프셋 계산
+  // 화면 크기에 따른 Y 오프셋 계산 (모바일 뷰포트 고려)
   const yOffset = useMemo(() => {
+    const aspectRatio = width / height
+    
+    // 세로로 긴 모바일 화면 (aspectRatio < 0.75)
+    if (aspectRatio < 0.75) {
+      // 모바일 세로 화면에서는 위로 올려줌
+      if (height > 800) return 0.4
+      if (height > 700) return 0.3
+      return 0.2
+    }
+    
+    // 태블릿이나 가로 모드 (aspectRatio < 1.3)
+    if (aspectRatio < 1.3) {
+      return 0
+    }
+    
+    // 데스크톱 화면
     if (width > 1440) return -0.3
     if (width > 1024) return -0.2
     if (width > 768) return -0.1
     return 0
-  }, [width])
+  }, [width, height])
   
   // 화면 크기에 따른 Y 간격 계산
   const ySpacing = useMemo(() => {
