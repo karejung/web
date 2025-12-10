@@ -1,126 +1,172 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
-interface ScreenSize {
+// 디바이스 정보 인터페이스
+interface DeviceInfo {
+  isMobile: boolean;
+  isTablet: boolean;
+  isDesktop: boolean;
+}
+
+// 반응형 정보 인터페이스
+export interface ResponsiveInfo {
+  // 화면 크기
   width: number;
   height: number;
-}
-
-interface ScaleConfig {
-  main: number;  // Scene.tsx용
-  test: number;  // test/Scene.tsx용
-}
-
-interface PositionConfig {
-  main: [number, number, number];  // Scene.tsx용 [x, y, z]
-  test: [number, number, number];  // test/Scene.tsx용 [x, y, z]
+  pixelRatio: number;
+  
+  // 디바이스 유형
+  isMobile: boolean;
+  isTablet: boolean;
+  isDesktop: boolean;
+  
+  // 반응형 계산 함수
+  getScaleFactor: () => number;
+  getPositionYOffset: () => number;
+  getResponsiveScale: (baseScale: number) => number;
+  getResponsivePosition: (basePosition: [number, number, number]) => [number, number, number];
 }
 
 /**
- * 브라우저 화면 크기를 추적하고 반응형 스케일 및 위치 값을 반환하는 커스텀 훅
- * @returns {ScreenSize & { scale: ScaleConfig, position: PositionConfig }} 화면 크기, 스케일, 위치 설정
+ * 통합된 반응형 기기 및 창 크기 감지 훅
+ * - 실시간 리사이즈 반응
+ * - 디바이스 유형 감지 (isMobile, isTablet, isDesktop)
+ * - 3D 모델용 반응형 계산 함수
  */
-export function useScreenSize() {
-  const [screenSize, setScreenSize] = useState<ScreenSize>({
+export function useScreenSize(): ResponsiveInfo {
+  // 창 크기 상태
+  const [windowSize, setWindowSize] = useState(() => ({
     width: typeof window !== 'undefined' ? window.innerWidth : 1920,
     height: typeof window !== 'undefined' ? window.innerHeight : 1080,
+    pixelRatio: typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1
+  }));
+
+  // 디바이스 정보 상태
+  const deviceInfo = useRef<DeviceInfo>({
+    isMobile: false,
+    isTablet: false,
+    isDesktop: true
   });
 
-  useEffect(() => {
-    // 리사이즈 핸들러 - 모바일에서 실제 뷰포트 높이 사용
-    const handleResize = () => {
-      // visualViewport가 있으면 사용 (모바일에서 주소창/탭바 제외한 실제 높이)
+  // RAF를 사용한 리사이즈 핸들러 (실시간 반응)
+  const rafId = useRef<number | undefined>(undefined);
+  
+  const handleResize = useCallback(() => {
+    // 이전 RAF 취소
+    if (rafId.current) {
+      cancelAnimationFrame(rafId.current);
+    }
+    
+    // 다음 프레임에서 상태 업데이트
+    rafId.current = requestAnimationFrame(() => {
+      if (typeof window === 'undefined') return;
+
       const width = window.visualViewport?.width || window.innerWidth;
       const height = window.visualViewport?.height || window.innerHeight;
-      
-      setScreenSize({
-        width,
-        height,
-      });
-    };
 
-    // 리사이즈 이벤트 리스너 등록
-    window.addEventListener('resize', handleResize);
+      setWindowSize(prev => {
+        // 실제로 변경된 경우에만 업데이트
+        if (prev.width !== width || prev.height !== height) {
+          return {
+            width,
+            height,
+            pixelRatio: Math.min(window.devicePixelRatio || 1, 2)
+          };
+        }
+        return prev;
+      });
+    });
+  }, []);
+
+  // 창 크기 변경 감지
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    window.addEventListener('resize', handleResize, { passive: true });
     
-    // visualViewport의 리사이즈 이벤트도 리스닝 (모바일 주소창 숨김/표시 감지)
+    // visualViewport의 리사이즈 이벤트도 리스닝
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', handleResize);
     }
-
-    // 초기 사이즈 설정
+    
+    // 초기 크기 설정
     handleResize();
-
-    // 클린업
+    
     return () => {
       window.removeEventListener('resize', handleResize);
       if (window.visualViewport) {
         window.visualViewport.removeEventListener('resize', handleResize);
       }
+      if (rafId.current) {
+        cancelAnimationFrame(rafId.current);
+      }
+    };
+  }, [handleResize]);
+
+  // 디바이스 유형 감지
+  useEffect(() => {
+    if (typeof navigator === 'undefined') return;
+
+    const userAgent = navigator.userAgent;
+    
+    const isMobileDevice = /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+    const isTabletDevice = /iPad/i.test(userAgent) || 
+      (/Android/i.test(userAgent) && !/Mobile/i.test(userAgent));
+    
+    deviceInfo.current = {
+      isMobile: isMobileDevice && !isTabletDevice,
+      isTablet: isTabletDevice,
+      isDesktop: !isMobileDevice && !isTabletDevice
     };
   }, []);
 
-  // 화면 크기에 따른 스케일 및 위치 값 계산
-  const calculateResponsiveValues = (): { scale: ScaleConfig; position: PositionConfig } => {
-    const { width, height } = screenSize;
+  // 화면 너비에 따른 스케일 팩터 계산
+  const getScaleFactor = useCallback((): number => {
+    const { width } = windowSize;
+    if (width > 1440) return 1.2;
+    if (width > 1024) return 1.05;
+    if (width > 768) return 0.9;
+    if (width > 480) return 0.8;
+    return 0.7;
+  }, [windowSize.width]);
 
-    let mainScale = 1;     // Scene.tsx의 기본값
-    let testScale = 10;    // test/Scene.tsx의 기본값
-    let mainPosY = 0;      // Scene.tsx Y 위치
-    let testPosY = -2;     // test/Scene.tsx Y 위치 (기본값)
+  // 화면 너비에 따른 Y축 위치 오프셋 계산
+  const getPositionYOffset = useCallback((): number => {
+    const { width } = windowSize;
+    if (width > 1440) return -0.3;
+    if (width > 1024) return -0.2;
+    if (width > 768) return -0.1;
+    return 0;
+  }, [windowSize.width]);
 
-    // 브레이크포인트에 따른 스케일 및 위치 조정
-    // 모바일 (< 640px)
-    if (width < 640) {
-      mainScale = 0.6;   // 15/25 = 0.6
-      testScale = 5;     // 50/100 * 10 = 5
-      mainPosY = 0.6;    // 작아진만큼 위로 올림
-      testPosY = -1.2;   // 작아진만큼 위로 올림
-    } 
-    // 태블릿 (640px ~ 1024px)
-    else if (width < 1024) {
-      mainScale = 0.8;   // 20/25 = 0.8
-      testScale = 7.5;   // 75/100 * 10 = 7.5
-      mainPosY = 0.3;    // 작아진만큼 위로 올림
-      testPosY = -1.6;   // 작아진만큼 위로 올림
-    }
-    // 데스크톱 (>= 1024px)
-    else {
-      mainScale = 1;     // 25/25 = 1
-      testScale = 10;    // 100/100 * 10 = 10
-      mainPosY = 0;      // 기본 위치
-      testPosY = -2;     // 기본 위치
-    }
+  // 화면 크기에 따라 스케일을 조정
+  const getResponsiveScale = useCallback((baseScale: number): number => {
+    const scaleFactor = getScaleFactor();
+    return baseScale * scaleFactor;
+  }, [getScaleFactor]);
 
-    // 실제 브라우저 높이에 따른 Y 위치 조정
-    // 기준 높이(800px)보다 작으면 위로 올리고, 크면 아래로 내림
-    const baseHeight = 800;
-    const heightDiff = (height - baseHeight) / baseHeight;
-    
-    // heightDiff를 적용한 최종 Y 위치 계산
-    // 높이가 작을수록 더 위로 올림 (모바일 하단바 고려)
-    mainPosY += heightDiff * 0.5;  // main은 height 변화의 50%만 적용
-    testPosY += heightDiff * 0.8;  // test는 height 변화의 80% 적용
+  // 화면 크기에 따라 위치를 조정
+  const getResponsivePosition = useCallback((basePosition: [number, number, number]): [number, number, number] => {
+    const yOffset = getPositionYOffset();
+    return [
+      basePosition[0],
+      basePosition[1] + yOffset,
+      basePosition[2]
+    ];
+  }, [getPositionYOffset]);
 
-    return {
-      scale: {
-        main: mainScale,
-        test: testScale,
-      },
-      position: {
-        main: [0, mainPosY, 0],
-        test: [0, testPosY, 0],
-      }
-    };
-  };
-
-  const { scale, position } = calculateResponsiveValues();
-
+  // 통합된 반응형 정보 반환
   return {
-    width: screenSize.width,
-    height: screenSize.height,
-    scale,
-    position,
+    width: windowSize.width,
+    height: windowSize.height,
+    pixelRatio: windowSize.pixelRatio,
+    isMobile: deviceInfo.current.isMobile,
+    isTablet: deviceInfo.current.isTablet,
+    isDesktop: deviceInfo.current.isDesktop,
+    getScaleFactor,
+    getPositionYOffset,
+    getResponsiveScale,
+    getResponsivePosition
   };
 }
-
