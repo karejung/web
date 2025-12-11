@@ -137,22 +137,19 @@ export function useScreenSize(): ResponsiveInfo {
   // 3D 모델 위치 계산 (basePosition + yOffset + index spacing)
   const getModelPosition = useCallback((basePosition: [number, number, number], index: number): [number, number, number] => {
     const { width, height } = windowSize;
-    const aspectRatio = width / height;
     
-    // Y 오프셋 계산 (화면 비율 기반 동적 계산)
-    // 기준: 16:9 (1.78) 데스크톱에서 오프셋 0
-    // 세로로 길수록 (비율이 작을수록) 위로 올림
+    // Y 오프셋 계산 (기준 높이 대비 실제 높이 차이 기반)
+    // 기준: 데스크톱 16:9 비율에서의 높이 (width / 1.78)
+    // 실제 높이가 기준보다 크면 (세로로 긴 화면) 위로 올림
+    const baseHeight = width / 1.78; // 16:9 기준 높이
+    const heightDiff = height - baseHeight;
+    
+    // 높이 차이가 양수면 (세로로 긴 화면) 위로 올림
+    // 조정 계수: 높이 차이 100px당 약 0.1 오프셋
     let yOffset = 0;
-    
-    if (aspectRatio < 0.6) {
-      // 매우 세로로 긴 화면 (예: 모바일 세로)
-      // 비율이 작을수록 더 많이 올림
-      yOffset = (0.6 - aspectRatio) * 2.5;
-    } else if (aspectRatio < 1.0) {
-      // 세로 화면 (태블릿 세로 또는 모바일)
-      yOffset = (1.0 - aspectRatio) * 1.2;
+    if (heightDiff > 0) {
+      yOffset = (heightDiff / 1000) * 1.5;
     }
-    // 가로 화면(aspectRatio >= 1.0)은 오프셋 0
     
     // Y 간격 계산 (모델 간 거리)
     let ySpacing = 6;
