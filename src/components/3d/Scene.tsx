@@ -19,7 +19,7 @@ import type { ModelConfig, ReflectorConfig } from "@/data/scenes";
 const CAMERA_CONFIG = {
   fov: 1,
   position: [5 * 29, 6.5 * 29, -10 * 29] as [number, number, number],
-  near: 100,
+  near: 200,
   far: 1000,
   zoom: 1
 };
@@ -225,6 +225,7 @@ function ModelGroup({ getModelScale, getModelPosition, ySpacing }: ModelGroupPro
 
 export default function Scene() {
   const isBlurred = useSceneStore((state) => state.isBlurred);
+  const isDetailView = useSceneStore((state) => state.isDetailView);
   const { getModelScale, getModelPosition, getYSpacing } = useScreenSize();
   const ySpacing = getYSpacing();
   const { 
@@ -266,15 +267,15 @@ export default function Scene() {
         <OrbitControls 
           autoRotate={true} 
           autoRotateSpeed={0.05} 
-          enableZoom={false}
+          enableZoom={isDetailView}
           enablePan={false}
           enableDamping 
           makeDefault 
           target={[0, 1.5, 0]}
-          minPolarAngle={Math.PI / 3}
+          minPolarAngle={isDetailView ? 0 : Math.PI / 3}
           maxPolarAngle={Math.PI / 3}
-          minAzimuthAngle={-Math.PI / -2}
-          maxAzimuthAngle={Math.PI / -2}
+          minAzimuthAngle={isDetailView ? -Infinity : -Math.PI / -2}
+          maxAzimuthAngle={isDetailView ? Infinity : Math.PI / -2}
         />
         
         <ModelGroup getModelScale={getModelScale} getModelPosition={getModelPosition} ySpacing={ySpacing} />

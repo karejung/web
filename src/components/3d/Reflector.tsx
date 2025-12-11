@@ -12,8 +12,7 @@ type ReflectorProps = React.JSX.IntrinsicElements['group'] & {
 
 // 화면 크기에 따른 리플렉터 해상도 반환
 function getReflectorResolution(width: number): number {
-  if (width <= 480) return 512;    // 모바일
-  if (width <= 768) return 1024;  // 태블릿
+  if (width <= 480) return 1024;    // 모바일
   return 2048;                      // PC
 }
 

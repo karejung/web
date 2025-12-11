@@ -88,7 +88,7 @@ export const scenesData: SceneConfig[] = [
         {
           type: 'floor',
           meshPath: "/gltf/1/texture/reflector.glb",
-          position: [0, 0.03, 0],
+          position: [0, 0.01, 0],
           rotation: [-Math.PI / 2, 0, 0],
           resolution: 1024,
           mixStrength: 0.5,
