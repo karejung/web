@@ -8,10 +8,10 @@ import { Model } from "./Model";
 import { Reflector } from "./Reflector";
 import * as THREE from "three/webgpu";
 import { scenesData } from "@/data/scenes";
-import { useSceneStore } from "@/store/sceneStore";
-import { useSceneNavigation } from "@/config/useSceneNavigation";
+import { useSceneStore } from "@/hook/sceneStore";
+import { useSceneNavigation } from "@/hook/useSceneNavigation";
 import { GradientOverlay } from "@/components/ui/GradientOverlay";
-import { useScreenSize } from "@/config/useScreenSize";
+import { useScreenSize } from "@/hook/useScreenSize";
 import type { ModelConfig, ReflectorConfig } from "@/data/scenes";
 
 // 카메라 설정 상수

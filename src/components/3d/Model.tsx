@@ -3,8 +3,8 @@ import { useGLTF } from '@react-three/drei'
 import { useThree, useFrame } from '@react-three/fiber'
 import { DRACOLoader } from 'three-stdlib'
 import * as THREE from 'three/webgpu'
-import { BASE_PATH } from '@/config/basePath'
-import { TextureLoaderManager } from '@/config/TextureLoaders'
+import { BASE_PATH } from '@/hook/basePath'
+import { TextureLoaderManager } from '@/hook/TextureLoaders'
 
 type ModelProps = React.JSX.IntrinsicElements['group'] & {
   modelName: string

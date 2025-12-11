@@ -1,7 +1,7 @@
 'use client';
 
 import Image from "next/image";
-import { BASE_PATH } from "@/config/basePath";
+import { BASE_PATH } from "@/hook/basePath";
 
 export default function Logo() {
   return (

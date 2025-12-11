@@ -1,5 +1,5 @@
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
-import { BASE_PATH } from '@/config/basePath';
+import { BASE_PATH } from '@/hook/basePath';
 
 /**
  * KTX2Loader 싱글톤 관리 클래스 (WebGPU/WebGL 지원)
