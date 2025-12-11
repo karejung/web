@@ -16,10 +16,17 @@ export function useDetailPage(paramsPromise: Promise<{ id: string }>) {
   const exitDetail = useSceneStore((state) => state.exitDetail);
   const setCurrentScene = useSceneStore((state) => state.setCurrentScene);
   
-  // 이미 초기화되었는지 추적
+  // 이미 초기화되었는지 추적 (id별로 추적)
   const initializedRef = useRef(false);
+  const previousIdRef = useRef(id);
 
   useEffect(() => {
+    // id가 변경되었으면 initializedRef 리셋
+    if (previousIdRef.current !== id) {
+      initializedRef.current = false;
+      previousIdRef.current = id;
+    }
+
     // 이미 초기화되었으면 스킵
     if (initializedRef.current) {
       return;
