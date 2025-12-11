@@ -129,7 +129,7 @@ export function useScreenSize(): ResponsiveInfo {
     else if (width > 1024) scaleFactor = 1.05;
     else if (width > 768) scaleFactor = 0.9;
     else if (width > 480) scaleFactor = 0.8;
-    else scaleFactor = 0.7;
+    else scaleFactor = 0.8;
     
     return baseScale * scaleFactor;
   }, [windowSize.width]);
