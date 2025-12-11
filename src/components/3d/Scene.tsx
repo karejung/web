@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useMemo, useState, useEffect, useCallback, useRef } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { Environment, OrbitControls } from "@react-three/drei";
 import { animated, useSpring } from "@react-spring/three";
 import { useRouter } from "next/navigation";
@@ -136,6 +136,9 @@ function ResponsiveOrbitControls({
   isDetailView: boolean;
 }) {
   const controlsRef = useRef<any>(null);
+  const rotateSpeedRef = useRef(0.05);
+  const minAzimuth = isDetailView ? -Infinity : -Math.PI / -2;
+  const maxAzimuth = isDetailView ? Infinity : Math.PI / -2;
 
   // target이 변경될 때마다 OrbitControls 업데이트
   useEffect(() => {
@@ -145,11 +148,27 @@ function ResponsiveOrbitControls({
     }
   }, [cameraTarget]);
 
+  // autoRotate 방향을 한계에 도달하면 반대로 변경
+  useFrame(() => {
+    if (!isDetailView && controlsRef.current) {
+      const azimuth = controlsRef.current.getAzimuthalAngle();
+      
+      // 한계에 도달하면 방향 반전
+      if (azimuth >= maxAzimuth && rotateSpeedRef.current > 0) {
+        rotateSpeedRef.current = -0.05;
+      } else if (azimuth <= minAzimuth && rotateSpeedRef.current < 0) {
+        rotateSpeedRef.current = 0.05;
+      }
+      
+      controlsRef.current.autoRotateSpeed = rotateSpeedRef.current;
+    }
+  });
+
   return (
     <OrbitControls 
       ref={controlsRef}
-      autoRotate={true} 
-      autoRotateSpeed={0.05} 
+      autoRotate={!isDetailView} 
+      autoRotateSpeed={rotateSpeedRef.current} 
       enableZoom={isDetailView}
       enablePan={false}
       enableDamping 
@@ -157,8 +176,8 @@ function ResponsiveOrbitControls({
       target={cameraTarget}
       minPolarAngle={isDetailView ? 0 : Math.PI / 3}
       maxPolarAngle={Math.PI / 3}
-      minAzimuthAngle={isDetailView ? -Infinity : -Math.PI / -2}
-      maxAzimuthAngle={isDetailView ? Infinity : Math.PI / -2}
+      minAzimuthAngle={minAzimuth}
+      maxAzimuthAngle={maxAzimuth}
     />
   );
 }
