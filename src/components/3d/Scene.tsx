@@ -48,12 +48,22 @@ function AnimatedModelWrapper({ model, reflector, isCurrentModel, scale, positio
     config: SPRING_CONFIG
   });
 
+  const handlePointerOver = () => {
+    document.body.style.cursor = 'pointer';
+  };
+
+  const handlePointerOut = () => {
+    document.body.style.cursor = 'auto';
+  };
+
   return (
     <animated.group
       scale={spring.scale}
       position-x={spring.positionX}
       position-y={spring.positionY}
       position-z={spring.positionZ}
+      onPointerOver={handlePointerOver}
+      onPointerOut={handlePointerOut}
     >
       <Model 
         modelName={model.component}

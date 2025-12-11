@@ -61,6 +61,21 @@ export function Model({ modelName, rotation, isCurrentModel, children, ...props 
     }
   }, [scene])
 
+  // isCurrentModel 상태에 따라 emissiveIntensity 조절
+  useEffect(() => {
+    if (!scene) return
+
+    scene.traverse((child) => {
+      if ((child as any).isMesh) {
+        const mesh = child as THREE.Mesh
+        const material = mesh.material as THREE.MeshStandardMaterial
+        if (material && 'emissiveIntensity' in material) {
+          material.emissiveIntensity = isCurrentModel ? 1 : 0.2
+        }
+      }
+    })
+  }, [scene, isCurrentModel])
+
 
   // 매 프레임마다 카메라 각도에 따라 메쉬 가시성 제어 (현재 모델만)
   useFrame(() => {

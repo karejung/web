@@ -3,10 +3,18 @@ import * as THREE from 'three/webgpu'
 import { reflector, uniform } from 'three/tsl'
 import { useGLTF } from '@react-three/drei'
 import { BASE_PATH } from '@/config/basePath'
+import { useScreenSize } from '@/config/useScreenSize'
 import type { ReflectorItemConfig } from '@/data/scenes'
 
 type ReflectorProps = React.JSX.IntrinsicElements['group'] & {
   items?: ReflectorItemConfig[]
+}
+
+// 화면 크기에 따른 리플렉터 해상도 반환
+function getReflectorResolution(width: number): number {
+  if (width <= 480) return 512;    // 모바일
+  if (width <= 768) return 1024;  // 태블릿
+  return 2048;                      // PC
 }
 
 // 둥근 모서리 Shape 생성 함수 (추후 구현용)
@@ -29,13 +37,17 @@ const createRoundedRectShape = (width: number, height: number, radius: number) =
 }
 
 export function Reflector({ items = [], ...props }: ReflectorProps) {
+  const { width } = useScreenSize();
+  const baseResolution = getReflectorResolution(width);
+
   // 평면 리플렉터 처리
   const planeReflectors = useMemo(() => {
     return items
       .filter(item => !item.type || item.type === 'plane')
       .map((item) => {
-        // WebGPU reflector 생성
-        const resolutionScale = item.resolution ? item.resolution / 2048 : 1
+        // WebGPU reflector 생성 (반응형 해상도)
+        const resolution = item.resolution ?? baseResolution;
+        const resolutionScale = resolution / 2048;
         const reflection = reflector({ 
           resolutionScale, 
           depth: true, 
@@ -77,15 +89,16 @@ export function Reflector({ items = [], ...props }: ReflectorProps) {
           overlayOffset: item.overlayOffset
         }
       })
-  }, [items])
+  }, [items, baseResolution])
 
   // 바닥 메시 리플렉터 처리
   const floorReflectors = useMemo(() => {
     return items
       .filter(item => item.type === 'floor')
       .map((item) => {
-        // WebGPU reflector 생성
-        const resolutionScale = item.resolution ? item.resolution / 2048 : 0.5
+        // WebGPU reflector 생성 (반응형 해상도)
+        const resolution = item.resolution ?? baseResolution;
+        const resolutionScale = resolution / 2048;
         const reflection = reflector({ 
           resolutionScale, 
           depth: true, 
@@ -117,7 +130,7 @@ export function Reflector({ items = [], ...props }: ReflectorProps) {
           position: item.position
         }
       })
-  }, [items])
+  }, [items, baseResolution])
 
   return (
     <group {...props}>
