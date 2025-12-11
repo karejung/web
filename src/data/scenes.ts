@@ -59,7 +59,7 @@ export const scenesData: SceneConfig[] = [
     model: {
       component: "1",
       scale: 1,
-      position: [0, 0, 0],
+      position: [0.1, 0, -0.1],
       rotation: [0, 0, 0],
     },
     reflector: {
