@@ -1,0 +1,209 @@
+"use client";
+
+import { Suspense, useMemo, useState, useEffect, useCallback } from "react";
+import { animated, useSpring } from "@react-spring/three";
+import { useRouter } from "next/navigation";
+import { Model } from "./Model";
+import { Reflector } from "./Reflector";
+import { scenesData } from "@/data/scenes";
+import { useSceneStore } from "@/hook/sceneStore";
+import { useScreenSize } from "@/hook/useScreenSize";
+import type { ModelConfig, ReflectorConfig } from "@/data/scenes";
+
+// 스프링 설정
+const SPRING_CONFIG = {
+  tension: 280,
+  friction: 60,
+  precision: 0.001
+};
+
+interface AnimatedModelWrapperProps {
+  model: ModelConfig;
+  reflector?: ReflectorConfig;
+  index: number;
+  sceneId: string;
+  isCurrentModel: boolean;
+  scale: number;
+  position: [number, number, number];
+  isDetailView: boolean;
+  isSelectedModel: boolean;
+  onModelClick: (sceneId: string) => void;
+  onFadeOutComplete: () => void;
+}
+
+function AnimatedModelWrapper({ 
+  model, 
+  reflector, 
+  sceneId,
+  isCurrentModel, 
+  scale, 
+  position,
+  isDetailView,
+  isSelectedModel,
+  onModelClick,
+  onFadeOutComplete
+}: AnimatedModelWrapperProps) {
+  const { height } = useScreenSize();
+  
+  // 상세 모드에서 선택된 모델은 1.2배, 아닌 모델은 opacity 0
+  const targetScale = isDetailView && isSelectedModel ? scale * 1.2 : scale;
+  const targetOpacity = isDetailView && !isSelectedModel ? 0 : 1;
+  
+
+  const spring = useSpring({
+    scale: targetScale,
+    positionX: position[0],
+    positionY: position[1], 
+    positionZ: position[2],
+    opacity: targetOpacity,
+    config: SPRING_CONFIG,
+    onRest: (result) => {
+      // 상세 모드에서 페이드아웃 완료 시에만 콜백 호출
+      if (isDetailView && !isSelectedModel && result.value.opacity === 0) {
+        onFadeOutComplete();
+      }
+    }
+  });
+
+  const handlePointerOver = () => {
+    if (!isDetailView) {
+      document.body.style.cursor = 'pointer';
+    }
+  };
+
+  const handlePointerOut = () => {
+    document.body.style.cursor = 'auto';
+  };
+
+  const handleClick = () => {
+    if (!isDetailView && isCurrentModel) {
+      onModelClick(sceneId);
+    }
+  };
+
+  return (
+    <animated.group
+      scale={spring.scale}
+      position-x={spring.positionX}
+      position-y={spring.positionY}
+      position-z={spring.positionZ}
+      onPointerOver={handlePointerOver}
+      onPointerOut={handlePointerOut}
+      onClick={handleClick}
+    >
+      <Model 
+        modelName={model.component}
+        rotation={model.rotation}
+        isCurrentModel={isCurrentModel || isSelectedModel}
+        opacity={spring.opacity}
+      >
+        {(isCurrentModel || isSelectedModel) && (
+          <Reflector items={reflector?.items || []} />
+        )}
+      </Model>
+    </animated.group>
+  );
+}
+
+interface ModelGroupProps {
+  getModelScale: (baseScale: number) => number;
+  getModelPosition: (basePosition: [number, number, number], index: number) => [number, number, number];
+  ySpacing: number;
+}
+
+export function ModelGroup({ getModelScale, getModelPosition, ySpacing }: ModelGroupProps) {
+  const router = useRouter();
+  const currentIndex = useSceneStore((state) => state.currentIndex);
+  const isDetailView = useSceneStore((state) => state.isDetailView);
+  const selectedModelId = useSceneStore((state) => state.selectedModelId);
+  const enterDetail = useSceneStore((state) => state.enterDetail);
+  const setTransitioning = useSceneStore((state) => state.setTransitioning);
+  
+  // 페이드아웃 완료된 모델 추적 (상세 모드에서만 사용)
+  const [fadedOutModels, setFadedOutModels] = useState<Set<string>>(new Set());
+  
+  // 이전 상세 모드 상태 추적
+  const [wasDetailView, setWasDetailView] = useState(false);
+
+  // 상세 모드 전환 감지 및 fadedOutModels 초기화
+  useEffect(() => {
+    if (wasDetailView && !isDetailView) {
+      // 상세 모드에서 일반 모드로 전환됨 - 즉시 초기화
+      setFadedOutModels(new Set());
+    }
+    setWasDetailView(isDetailView);
+  }, [isDetailView, wasDetailView]);
+  
+  // 그룹 Y 위치 스프링 애니메이션
+  const { y } = useSpring({
+    y: currentIndex * ySpacing,
+    config: SPRING_CONFIG
+  });
+
+  // 보이는 모델만 렌더링 (성능 최적화)
+  const visibleIndices = useMemo(() => {
+    // 일반 모드: 현재 모델 ±1 범위만 렌더링
+    if (!isDetailView) {
+      const range = 1;
+      return scenesData
+        .map((_, i) => i)
+        .filter(i => Math.abs(i - currentIndex) <= range);
+    }
+    // 상세 모드: 선택된 모델 + 아직 페이드아웃 중인 모델만 표시
+    return scenesData
+      .map((scene, i) => ({ index: i, id: scene.id }))
+      .filter(({ id }) => id === selectedModelId || !fadedOutModels.has(id))
+      .map(({ index }) => index);
+  }, [currentIndex, isDetailView, selectedModelId, fadedOutModels]);
+
+  const handleModelClick = useCallback((sceneId: string) => {
+    enterDetail(sceneId);
+    router.push(`/${sceneId}`);
+  }, [enterDetail, router]);
+
+  const handleFadeOutComplete = useCallback((sceneId: string) => {
+    // 상세 모드에서만 페이드아웃 완료 처리
+    if (!isDetailView) return;
+    
+    setFadedOutModels(prev => new Set(prev).add(sceneId));
+    // 모든 비선택 모델이 페이드아웃 완료되면 전환 완료
+    const nonSelectedModels = scenesData.filter(s => s.id !== selectedModelId);
+    const allFadedOut = nonSelectedModels.every(s => 
+      fadedOutModels.has(s.id) || s.id === sceneId
+    );
+    if (allFadedOut) {
+      setTransitioning(false);
+    }
+  }, [isDetailView, selectedModelId, fadedOutModels, setTransitioning]);
+
+  return (
+    <animated.group position-y={y}>
+      {scenesData.map((scene, index) => {
+        if (!visibleIndices.includes(index)) return null;
+        
+        // Scene에서 스케일/위치 계산
+        const scale = getModelScale(scene.model.scale);
+        const position = getModelPosition(scene.model.position, index);
+        const isSelectedModel = scene.id === selectedModelId;
+        
+        return (
+          <Suspense key={`model-${index}`} fallback={null}>
+            <AnimatedModelWrapper
+              model={scene.model}
+              reflector={scene.reflector}
+              index={index}
+              sceneId={scene.id}
+              isCurrentModel={index === currentIndex}
+              scale={scale}
+              position={position}
+              isDetailView={isDetailView}
+              isSelectedModel={isSelectedModel}
+              onModelClick={handleModelClick}
+              onFadeOutComplete={() => handleFadeOutComplete(scene.id)}
+            />
+          </Suspense>
+        );
+      })}
+    </animated.group>
+  );
+}
