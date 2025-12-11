@@ -5,15 +5,17 @@ import { DRACOLoader } from 'three-stdlib'
 import * as THREE from 'three/webgpu'
 import { BASE_PATH } from '@/hook/basePath'
 import { TextureLoaderManager } from '@/hook/TextureLoaders'
+import type { SpringValue } from '@react-spring/three'
 
 type ModelProps = React.JSX.IntrinsicElements['group'] & {
   modelName: string
   rotation: [number, number, number]
   isCurrentModel: boolean
+  opacity?: SpringValue<number>
   children?: React.ReactNode
 }
 
-export function Model({ modelName, rotation, isCurrentModel, children, ...props }: ModelProps) {
+export function Model({ modelName, rotation, isCurrentModel, opacity, children, ...props }: ModelProps) {
   const { gl, camera } = useThree()
   const modelPath = `${BASE_PATH}/gltf/${modelName}/model_draco.gltf`
   
@@ -61,7 +63,7 @@ export function Model({ modelName, rotation, isCurrentModel, children, ...props 
     }
   }, [scene])
 
-  // isCurrentModel 상태에 따라 emissiveIntensity 조절
+  // isCurrentModel 상태에 따라 emissiveIntensity 조절 및 material 투명도 설정
   useEffect(() => {
     if (!scene) return
 
@@ -69,16 +71,34 @@ export function Model({ modelName, rotation, isCurrentModel, children, ...props 
       if ((child as any).isMesh) {
         const mesh = child as THREE.Mesh
         const material = mesh.material as THREE.MeshStandardMaterial
-        if (material && 'emissiveIntensity' in material) {
-          material.emissiveIntensity = isCurrentModel ? 1 : 0.2
+        if (material) {
+          if ('emissiveIntensity' in material) {
+            material.emissiveIntensity = isCurrentModel ? 1 : 0.2
+          }
+          // opacity 애니메이션을 위해 transparent 활성화
+          material.transparent = true
         }
       }
     })
   }, [scene, isCurrentModel])
 
 
-  // 매 프레임마다 카메라 각도에 따라 메쉬 가시성 제어 (현재 모델만)
+  // 매 프레임마다 카메라 각도에 따라 메쉬 가시성 제어 + opacity 업데이트
   useFrame(() => {
+    // opacity 업데이트 (SpringValue에서 현재 값 가져오기)
+    if (opacity && scene) {
+      const currentOpacity = opacity.get()
+      scene.traverse((child) => {
+        if ((child as any).isMesh) {
+          const mesh = child as THREE.Mesh
+          const material = mesh.material as THREE.MeshStandardMaterial
+          if (material && 'opacity' in material) {
+            material.opacity = currentOpacity
+          }
+        }
+      })
+    }
+
     // 현재 모델이 아니면 visibility 제어 스킵
     if (!isCurrentModel) return
     

@@ -19,6 +19,7 @@ export function useSceneNavigation({
   const totalScenes = useSceneStore((state) => state.totalScenes)
   const setCurrentScene = useSceneStore((state) => state.setCurrentScene)
   const setBlurred = useSceneStore((state) => state.setBlurred)
+  const isDetailView = useSceneStore((state) => state.isDetailView)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const lastScrollTime = useRef(0)
@@ -65,6 +66,9 @@ export function useSceneNavigation({
   const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault()
     
+    // 상세 뷰에서는 스크롤 비활성화
+    if (isDetailView) return
+    
     const now = Date.now()
     if (isScrolling.current) return
     
@@ -96,16 +100,21 @@ export function useSceneNavigation({
     } else {
       accumulatedDelta.current = 0
     }
-  }, [currentIndex, totalScenes, setCurrentScene, setBlurred, isTrackpad, cooldownTime, scrollThreshold])
+  }, [currentIndex, totalScenes, setCurrentScene, setBlurred, isTrackpad, cooldownTime, scrollThreshold, isDetailView])
 
   // 터치 시작
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    // 상세 뷰에서는 터치 스크롤 비활성화
+    if (isDetailView) return
     touchStartY.current = e.touches[0].clientY
     setBlurred(true)
-  }, [setBlurred])
+  }, [setBlurred, isDetailView])
 
   // 터치 이동
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    // 상세 뷰에서는 터치 스크롤 비활성화
+    if (isDetailView) return
+    
     const now = Date.now()
     if (now - lastScrollTime.current < cooldownTime) return
     
@@ -123,7 +132,7 @@ export function useSceneNavigation({
         touchStartY.current = e.touches[0].clientY
       }
     }
-  }, [currentIndex, totalScenes, setCurrentScene, cooldownTime])
+  }, [currentIndex, totalScenes, setCurrentScene, cooldownTime, isDetailView])
 
   // 터치 종료
   const handleTouchEnd = useCallback(() => {
