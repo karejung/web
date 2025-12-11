@@ -90,7 +90,6 @@ export const scenesData: SceneConfig[] = [
           meshPath: "/gltf/1/texture/reflector.glb",
           position: [0, 0.01, 0],
           rotation: [-Math.PI / 2, 0, 0],
-          resolution: 1024,
           mixStrength: 0.5,
           color: "#222",
           opacity: 0.05,

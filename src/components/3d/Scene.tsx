@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { useMemo, useRef, useEffect } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, OrbitControls } from "@react-three/drei";
 import * as THREE from "three/webgpu";
 import { useSceneStore } from "@/config/sceneStore";
@@ -19,6 +19,10 @@ const CAMERA_CONFIG = {
   zoom: 1
 };
 
+// 타겟 위치 상수
+const TARGET_DEFAULT = new THREE.Vector3(0, 1.5, 0);
+const TARGET_DETAIL = new THREE.Vector3(0, 2, 0);
+
 // 반응형 카메라 컨트롤 컴포넌트
 function ResponsiveOrbitControls({ 
   isDetailView 
@@ -26,38 +30,106 @@ function ResponsiveOrbitControls({
   isDetailView: boolean;
 }) {
   const controlsRef = useRef<any>(null);
-  const rotateSpeedRef = useRef(0.05);
+  const rotateSpeedRef = useRef(0.1);
+  const { camera } = useThree();
+  
+  // 애니메이션 상태
+  const animatingRef = useRef(false);
+  const targetPositionRef = useRef(TARGET_DEFAULT.clone());
+  const currentPolarAngleRef = useRef(Math.PI / 3);
+  const prevIsDetailViewRef = useRef(isDetailView);
+  
+  // 초기 카메라 위치 저장
+  const initialCameraPositionRef = useRef(new THREE.Vector3(...CAMERA_CONFIG.position));
+  
   const minAzimuth = isDetailView ? -Infinity : -Math.PI / -2;
   const maxAzimuth = isDetailView ? Infinity : Math.PI / -2;
 
-
-  // autoRotate 방향을 한계에 도달하면 반대로 변경
-  useFrame(() => {
-    if (!isDetailView && controlsRef.current) {
-      const azimuth = controlsRef.current.getAzimuthalAngle();
+  // isDetailView 변경 시 애니메이션 시작
+  useEffect(() => {
+    if (prevIsDetailViewRef.current !== isDetailView) {
+      animatingRef.current = true;
       
-      // 한계에 도달하면 방향 반전
+      // DetailView에서 돌아올 때 (back) - 카메라 위치와 회전값 초기화
+      if (!isDetailView && controlsRef.current) {
+        // 카메라 위치를 초기값으로 되돌리기 위한 타겟 설정
+        initialCameraPositionRef.current.set(...CAMERA_CONFIG.position);
+      }
+      
+      prevIsDetailViewRef.current = isDetailView;
+    }
+  }, [isDetailView]);
+
+  // 애니메이션 및 autoRotate 처리
+  useFrame((_, delta) => {
+    if (!controlsRef.current) return;
+    
+    const controls = controlsRef.current;
+    const lerpFactor = 1 - Math.pow(0.01, delta); // 부드러운 lerp (delta 기반)
+    
+    // 타겟 위치 애니메이션
+    const targetGoal = isDetailView ? TARGET_DETAIL : TARGET_DEFAULT;
+    targetPositionRef.current.lerp(targetGoal, lerpFactor);
+    controls.target.copy(targetPositionRef.current);
+    
+    // minPolarAngle 애니메이션
+    const targetPolarAngle = isDetailView ? 0 : Math.PI / 3;
+    currentPolarAngleRef.current = THREE.MathUtils.lerp(
+      currentPolarAngleRef.current,
+      targetPolarAngle,
+      lerpFactor
+    );
+    controls.minPolarAngle = currentPolarAngleRef.current;
+    
+    // DetailView에서 돌아올 때 카메라 위치 초기화 애니메이션
+    if (!isDetailView && animatingRef.current) {
+      // 애니메이션 중에는 autoRotate 비활성화
+      controls.autoRotate = false;
+      
+      camera.position.lerp(initialCameraPositionRef.current, lerpFactor);
+      
+      // 애니메이션 완료 체크
+      const distanceToTarget = camera.position.distanceTo(initialCameraPositionRef.current);
+      const targetDistance = controls.target.distanceTo(TARGET_DEFAULT);
+      
+      if (distanceToTarget < 0.5 && targetDistance < 0.01) {
+        animatingRef.current = false;
+        // 애니메이션 완료 후 autoRotate 활성화
+        controls.autoRotate = true;
+      }
+    } else if (!isDetailView) {
+      // 애니메이션이 아닐 때 autoRotate 활성화 확인
+      controls.autoRotate = true;
+    } else {
+      // DetailView일 때는 autoRotate 비활성화
+      controls.autoRotate = false;
+    }
+    
+    // autoRotate 방향 제어 (DetailView가 아니고 애니메이션 중이 아닐 때만)
+    if (!isDetailView && !animatingRef.current) {
+      const azimuth = controls.getAzimuthalAngle();
+      
       if (azimuth >= maxAzimuth && rotateSpeedRef.current > 0) {
         rotateSpeedRef.current = -0.05;
       } else if (azimuth <= minAzimuth && rotateSpeedRef.current < 0) {
         rotateSpeedRef.current = 0.05;
       }
       
-      controlsRef.current.autoRotateSpeed = rotateSpeedRef.current;
+      controls.autoRotateSpeed = rotateSpeedRef.current;
     }
+    
+    controls.update();
   });
 
   return (
     <OrbitControls 
       ref={controlsRef}
-      autoRotate={!isDetailView} 
       autoRotateSpeed={rotateSpeedRef.current} 
       enableZoom={isDetailView}
       enablePan={false}
       enableDamping 
+      dampingFactor={0.05}
       makeDefault 
-      target={[0,2,0]}
-      minPolarAngle={isDetailView ? 0 : Math.PI / 3}
       maxPolarAngle={Math.PI / 3}
       minAzimuthAngle={minAzimuth}
       maxAzimuthAngle={maxAzimuth}

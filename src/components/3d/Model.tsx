@@ -73,7 +73,7 @@ export function Model({ modelName, rotation, isCurrentModel, opacity, children, 
         const material = mesh.material as THREE.MeshStandardMaterial
         if (material) {
           if ('emissiveIntensity' in material) {
-            material.emissiveIntensity = isCurrentModel ? 1 : 0.2
+            material.emissiveIntensity = isCurrentModel ? 1 : 0.1
           }
           // opacity 애니메이션을 위해 transparent 활성화
           material.transparent = true
