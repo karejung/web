@@ -2,16 +2,17 @@
 
 import { Suspense, useMemo } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Environment } from "@react-three/drei";
+import { Environment, OrbitControls } from "@react-three/drei";
 import { animated, useSpring } from "@react-spring/three";
 import { Model } from "./Model";
 import { Reflector } from "./Reflector";
 import * as THREE from "three/webgpu";
 import { scenesData } from "@/data/scenes";
 import { useSceneStore } from "@/store/sceneStore";
-import { useSceneNavigation } from "@/hooks/useSceneNavigation";
+import { useSceneNavigation } from "@/config/useSceneNavigation";
 import { GradientOverlay } from "@/components/ui/GradientOverlay";
 import { useScreenSize } from "@/config/useScreenSize";
+import type { ModelConfig, ReflectorConfig } from "@/data/scenes";
 
 // 카메라 설정 상수
 const CAMERA_CONFIG = {
@@ -29,23 +30,53 @@ const SPRING_CONFIG = {
   precision: 0.001
 };
 
-interface ModelGroupProps {
-  screenWidth: number;
-  screenHeight: number;
+interface AnimatedModelWrapperProps {
+  model: ModelConfig;
+  reflector?: ReflectorConfig;
+  index: number;
+  isCurrentModel: boolean;
+  scale: number;
+  position: [number, number, number];
 }
 
-/**
- * 모델 그룹 컴포넌트 - Canvas 내부에서 사용
- */
-function ModelGroup({ screenWidth, screenHeight }: ModelGroupProps) {
+function AnimatedModelWrapper({ model, reflector, isCurrentModel, scale, position }: AnimatedModelWrapperProps) {
+  const spring = useSpring({
+    scale: scale,
+    positionX: position[0],
+    positionY: position[1],
+    positionZ: position[2],
+    config: SPRING_CONFIG
+  });
+
+  return (
+    <animated.group
+      scale={spring.scale}
+      position-x={spring.positionX}
+      position-y={spring.positionY}
+      position-z={spring.positionZ}
+    >
+      <Model 
+        modelName={model.component}
+        rotation={model.rotation}
+        isCurrentModel={isCurrentModel}
+      >
+        {isCurrentModel && (
+          <Reflector items={reflector?.items || []} />
+        )}
+      </Model>
+    </animated.group>
+  );
+}
+
+interface ModelGroupProps {
+  getModelScale: (baseScale: number) => number;
+  getModelPosition: (basePosition: [number, number, number], index: number) => [number, number, number];
+  ySpacing: number;
+}
+
+
+function ModelGroup({ getModelScale, getModelPosition, ySpacing }: ModelGroupProps) {
   const currentIndex = useSceneStore((state) => state.currentIndex);
-  
-  // 화면 크기에 따른 Y 간격 계산
-  const ySpacing = useMemo(() => {
-    if (screenWidth <= 768) return 4;
-    if (screenWidth <= 1440) return 5;
-    return 6;
-  }, [screenWidth]);
   
   // 그룹 Y 위치 스프링 애니메이션
   const { y } = useSpring({
@@ -63,31 +94,34 @@ function ModelGroup({ screenWidth, screenHeight }: ModelGroupProps) {
 
   return (
     <animated.group position-y={y}>
-      {scenesData.map((scene, index) => (
-        visibleIndices.includes(index) && (
+      {scenesData.map((scene, index) => {
+        if (!visibleIndices.includes(index)) return null;
+        
+        // Scene에서 스케일/위치 계산
+        const scale = getModelScale(scene.model.scale);
+        const position = getModelPosition(scene.model.position, index);
+        
+        return (
           <Suspense key={`model-${index}`} fallback={null}>
-            <Model 
-              config={scene.model} 
+            <AnimatedModelWrapper
+              model={scene.model}
+              reflector={scene.reflector}
               index={index}
-              currentIndex={currentIndex}
-              screenWidth={screenWidth}
-              screenHeight={screenHeight}
-            >
-              {/* 현재 모델일 때만 Reflector 렌더링 */}
-              {index === currentIndex && (
-                <Reflector items={scene.reflector?.items || []} />
-              )}
-            </Model>
+              isCurrentModel={index === currentIndex}
+              scale={scale}
+              position={position}
+            />
           </Suspense>
-        )
-      ))}
+        );
+      })}
     </animated.group>
   );
 }
 
 export default function Scene() {
   const isBlurred = useSceneStore((state) => state.isBlurred);
-  const { width, height } = useScreenSize(); // Canvas 외부에서 호출
+  const { getModelScale, getModelPosition, getYSpacing } = useScreenSize();
+  const ySpacing = getYSpacing();
   const { 
     containerRef, 
     handleTouchStart, 
@@ -124,14 +158,24 @@ export default function Scene() {
         <color attach="background" args={["#111"]} />
         <Environment preset="city" environmentIntensity={0.75} />
         
-        <ModelGroup screenWidth={width} screenHeight={height} />
+        <OrbitControls 
+          autoRotate={true} 
+          autoRotateSpeed={0.05} 
+          enableZoom={false}
+          enablePan={false}
+          enableDamping 
+          makeDefault 
+          target={[0, 1.5, 0]}
+          minPolarAngle={Math.PI / 3}
+          maxPolarAngle={Math.PI / 3}
+          minAzimuthAngle={-Math.PI / -2}
+          maxAzimuthAngle={Math.PI / -2}
+        />
+        
+        <ModelGroup getModelScale={getModelScale} getModelPosition={getModelPosition} ySpacing={ySpacing} />
       </Canvas>
-      
-      {/* 그라디언트 오버레이 */}
       <GradientOverlay position="top" />
       <GradientOverlay position="bottom" />
-      
-      {/* 블러 레이어 */}
       <div 
         className={`absolute inset-0 pointer-events-none backdrop-blur-sm transition-opacity duration-300 ${
           isBlurred ? 'opacity-100' : 'opacity-0'

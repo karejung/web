@@ -21,11 +21,10 @@ export interface ResponsiveInfo {
   isTablet: boolean;
   isDesktop: boolean;
   
-  // 반응형 계산 함수
-  getScaleFactor: () => number;
-  getPositionYOffset: () => number;
-  getResponsiveScale: (baseScale: number) => number;
-  getResponsivePosition: (basePosition: [number, number, number]) => [number, number, number];
+  // 3D 모델용 계산 함수
+  getModelScale: (baseScale: number) => number;
+  getModelPosition: (basePosition: [number, number, number], index: number) => [number, number, number];
+  getYSpacing: () => number;
 }
 
 /**
@@ -121,56 +120,48 @@ export function useScreenSize(): ResponsiveInfo {
     };
   }, []);
 
-  // 화면 너비에 따른 스케일 팩터 계산
-  const getScaleFactor = useCallback((): number => {
+  // 3D 모델 스케일 계산 (baseScale * scaleFactor)
+  const getModelScale = useCallback((baseScale: number): number => {
     const { width } = windowSize;
-    if (width > 1440) return 1.2;
-    if (width > 1024) return 1.05;
-    if (width > 768) return 0.9;
-    if (width > 480) return 0.8;
-    return 0.7;
+    let scaleFactor = 1;
+    
+    if (width > 1440) scaleFactor = 1.2;
+    else if (width > 1024) scaleFactor = 1.05;
+    else if (width > 768) scaleFactor = 0.9;
+    else if (width > 480) scaleFactor = 0.8;
+    else scaleFactor = 0.7;
+    
+    return baseScale * scaleFactor;
   }, [windowSize.width]);
 
-  // 화면 너비와 높이에 따른 Y축 위치 오프셋 계산
-  const getPositionYOffset = useCallback((): number => {
-    const { width, height } = windowSize;
-    const aspectRatio = width / height;
+  // 3D 모델 위치 계산 (basePosition + yOffset + index spacing)
+  const getModelPosition = useCallback((basePosition: [number, number, number], index: number): [number, number, number] => {
+    const { width } = windowSize;
     
-    // 세로로 긴 모바일 화면 (aspectRatio < 0.75)
-    if (aspectRatio < 0.75) {
-      // 매우 긴 모바일 화면 (예: 주소창이 숨겨진 상태)
-      if (height > 800) return 0.3;
-      if (height > 700) return 0.2;
-      return 0.15;
-    }
+    // Y 오프셋 계산 (모바일 중앙 보정)
+    let yOffset = 0;
+    if (width < 640) yOffset = 0.6;
+    else if (width < 1024) yOffset = 0.3;
     
-    // 태블릿이나 가로 모드
-    if (aspectRatio < 1.3) {
-      return 0;
-    }
+    // Y 간격 계산 (모델 간 거리)
+    let ySpacing = 6;
+    if (width <= 768) ySpacing = 4;
+    else if (width <= 1440) ySpacing = 5;
     
-    // 데스크톱 화면
-    if (width > 1440) return -0.3;
-    if (width > 1024) return -0.2;
-    if (width > 768) return -0.1;
-    return 0;
-  }, [windowSize.width, windowSize.height]);
-
-  // 화면 크기에 따라 스케일을 조정
-  const getResponsiveScale = useCallback((baseScale: number): number => {
-    const scaleFactor = getScaleFactor();
-    return baseScale * scaleFactor;
-  }, [getScaleFactor]);
-
-  // 화면 크기에 따라 위치를 조정
-  const getResponsivePosition = useCallback((basePosition: [number, number, number]): [number, number, number] => {
-    const yOffset = getPositionYOffset();
     return [
       basePosition[0],
-      basePosition[1] + yOffset,
+      basePosition[1] + yOffset + (index * -ySpacing),
       basePosition[2]
     ];
-  }, [getPositionYOffset]);
+  }, [windowSize.width]);
+
+  // Y 간격만 반환 (그룹 애니메이션용)
+  const getYSpacing = useCallback((): number => {
+    const { width } = windowSize;
+    if (width <= 768) return 4;
+    if (width <= 1440) return 5;
+    return 6;
+  }, [windowSize.width]);
 
   // 통합된 반응형 정보 반환
   return {
@@ -180,9 +171,8 @@ export function useScreenSize(): ResponsiveInfo {
     isMobile: deviceInfo.current.isMobile,
     isTablet: deviceInfo.current.isTablet,
     isDesktop: deviceInfo.current.isDesktop,
-    getScaleFactor,
-    getPositionYOffset,
-    getResponsiveScale,
-    getResponsivePosition
+    getModelScale,
+    getModelPosition,
+    getYSpacing
   };
 }
