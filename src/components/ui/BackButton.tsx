@@ -1,15 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useSceneStore } from "@/hook/sceneStore";
 
 export default function BackButton() {
-  const router = useRouter();
   const exitDetail = useSceneStore((state) => state.exitDetail);
 
   const handleBack = () => {
     exitDetail();
-    router.push("/");
   };
 
   return (
@@ -39,4 +36,5 @@ export default function BackButton() {
     </button>
   );
 }
+
 

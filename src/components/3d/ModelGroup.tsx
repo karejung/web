@@ -2,7 +2,6 @@
 
 import { Suspense, useMemo, useState, useEffect, useCallback } from "react";
 import { animated, useSpring } from "@react-spring/three";
-import { useRouter } from "next/navigation";
 import { Model } from "./Model";
 import { Reflector } from "./Reflector";
 import { scenesData } from "@/data/scenes";
@@ -112,7 +111,6 @@ interface ModelGroupProps {
 }
 
 export function ModelGroup({ getModelScale, getModelPosition, ySpacing }: ModelGroupProps) {
-  const router = useRouter();
   const currentIndex = useSceneStore((state) => state.currentIndex);
   const isDetailView = useSceneStore((state) => state.isDetailView);
   const selectedModelId = useSceneStore((state) => state.selectedModelId);
@@ -158,8 +156,7 @@ export function ModelGroup({ getModelScale, getModelPosition, ySpacing }: ModelG
 
   const handleModelClick = useCallback((sceneId: string) => {
     enterDetail(sceneId);
-    router.push(`/${sceneId}`);
-  }, [enterDetail, router]);
+  }, [enterDetail]);
 
   const handleFadeOutComplete = useCallback((sceneId: string) => {
     // 상세 모드에서만 페이드아웃 완료 처리
