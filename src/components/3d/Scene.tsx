@@ -113,11 +113,6 @@ export default function Scene() {
       </Canvas>
       <GradientOverlay position="top" />
       <GradientOverlay position="bottom" />
-      <div 
-        className={`absolute inset-0 pointer-events-none backdrop-blur-xs transition-opacity duration-300 ${
-          isBlurred ? 'opacity-100' : 'opacity-0'
-        }`}
-      />
     </div>
   );
 }
