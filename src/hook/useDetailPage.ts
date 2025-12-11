@@ -13,6 +13,7 @@ export function useDetailPage(paramsPromise: Promise<{ id: string }>) {
   const { id } = params;
   
   const enterDetail = useSceneStore((state) => state.enterDetail);
+  const exitDetail = useSceneStore((state) => state.exitDetail);
   const setCurrentScene = useSceneStore((state) => state.setCurrentScene);
   
   // 이미 초기화되었는지 추적
@@ -43,12 +44,13 @@ export function useDetailPage(paramsPromise: Promise<{ id: string }>) {
     initializedRef.current = true;
   }, [id, enterDetail, setCurrentScene]);
 
-  // 컴포넌트 언마운트 시 ref 초기화
+  // 컴포넌트 언마운트 시 상태 초기화 (뒤로가기 시 상세 모드 종료)
   useEffect(() => {
     return () => {
       initializedRef.current = false;
+      exitDetail();
     };
-  }, []);
+  }, [exitDetail]);
 
   return { modelId: id };
 }

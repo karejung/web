@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useMemo, useState, useEffect, useCallback } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Suspense, useMemo, useState, useEffect, useCallback, useRef } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
 import { Environment, OrbitControls } from "@react-three/drei";
 import { animated, useSpring } from "@react-spring/three";
 import { useRouter } from "next/navigation";
@@ -57,12 +57,14 @@ function AnimatedModelWrapper({
   onModelClick,
   onFadeOutComplete
 }: AnimatedModelWrapperProps) {
+  const { getDetailYOffset } = useScreenSize();
+  
   // 상세 모드에서 선택된 모델은 1.2배, 아닌 모델은 opacity 0
   const targetScale = isDetailView && isSelectedModel ? scale * 1.2 : scale;
   const targetOpacity = isDetailView && !isSelectedModel ? 0 : 1;
   
-  // 상세 모드에서 모델을 화면 중앙으로 이동 (Y축 아래로 조정)
-  const detailYOffset = isDetailView && isSelectedModel ? -0.3 : 0;
+  // 상세 모드에서 모델을 화면 중앙으로 이동 (Y축 아래로 조정) - 화면 크기에 따라 동적으로 계산
+  const detailYOffset = isDetailView && isSelectedModel ? getDetailYOffset() : 0;
 
   const spring = useSpring({
     scale: targetScale,
@@ -123,6 +125,42 @@ interface ModelGroupProps {
   getModelScale: (baseScale: number) => number;
   getModelPosition: (basePosition: [number, number, number], index: number) => [number, number, number];
   ySpacing: number;
+}
+
+// 반응형 카메라 컨트롤 컴포넌트
+function ResponsiveOrbitControls({ 
+  cameraTarget, 
+  isDetailView 
+}: { 
+  cameraTarget: [number, number, number]; 
+  isDetailView: boolean;
+}) {
+  const controlsRef = useRef<any>(null);
+
+  // target이 변경될 때마다 OrbitControls 업데이트
+  useEffect(() => {
+    if (controlsRef.current) {
+      controlsRef.current.target.set(cameraTarget[0], cameraTarget[1], cameraTarget[2]);
+      controlsRef.current.update();
+    }
+  }, [cameraTarget]);
+
+  return (
+    <OrbitControls 
+      ref={controlsRef}
+      autoRotate={true} 
+      autoRotateSpeed={0.05} 
+      enableZoom={isDetailView}
+      enablePan={false}
+      enableDamping 
+      makeDefault 
+      target={cameraTarget}
+      minPolarAngle={isDetailView ? 0 : Math.PI / 3}
+      maxPolarAngle={Math.PI / 3}
+      minAzimuthAngle={isDetailView ? -Infinity : -Math.PI / -2}
+      maxAzimuthAngle={isDetailView ? Infinity : Math.PI / -2}
+    />
+  );
 }
 
 
@@ -226,8 +264,12 @@ function ModelGroup({ getModelScale, getModelPosition, ySpacing }: ModelGroupPro
 export default function Scene() {
   const isBlurred = useSceneStore((state) => state.isBlurred);
   const isDetailView = useSceneStore((state) => state.isDetailView);
-  const { getModelScale, getModelPosition, getYSpacing } = useScreenSize();
-  const ySpacing = getYSpacing();
+  const { getModelScale, getModelPosition, getYSpacing, getCameraTarget, viewportWidth, viewportHeight } = useScreenSize();
+  
+  // 반응형 값들을 메모이제이션
+  const ySpacing = useMemo(() => getYSpacing(), [getYSpacing]);
+  const cameraTarget = useMemo(() => getCameraTarget(), [getCameraTarget]);
+  
   const { 
     containerRef, 
     handleTouchStart, 
@@ -264,19 +306,7 @@ export default function Scene() {
         <color attach="background" args={["#111"]} />
         <Environment preset="city" environmentIntensity={0.75} />
         
-        <OrbitControls 
-          autoRotate={true} 
-          autoRotateSpeed={0.05} 
-          enableZoom={isDetailView}
-          enablePan={false}
-          enableDamping 
-          makeDefault 
-          target={[0, 1.5, 0]}
-          minPolarAngle={isDetailView ? 0 : Math.PI / 3}
-          maxPolarAngle={Math.PI / 3}
-          minAzimuthAngle={isDetailView ? -Infinity : -Math.PI / -2}
-          maxAzimuthAngle={isDetailView ? Infinity : Math.PI / -2}
-        />
+        <ResponsiveOrbitControls cameraTarget={cameraTarget} isDetailView={isDetailView} />
         
         <ModelGroup getModelScale={getModelScale} getModelPosition={getModelPosition} ySpacing={ySpacing} />
       </Canvas>
