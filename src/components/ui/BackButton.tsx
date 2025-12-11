@@ -1,6 +1,6 @@
 "use client";
 
-import { useSceneStore } from "@/hook/sceneStore";
+import { useSceneStore } from "@/config/sceneStore";
 
 export default function BackButton() {
   const exitDetail = useSceneStore((state) => state.exitDetail);
@@ -36,5 +36,6 @@ export default function BackButton() {
     </button>
   );
 }
+
 
 

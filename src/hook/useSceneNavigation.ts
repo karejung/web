@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useRef, useEffect } from 'react'
-import { useSceneStore } from '@/hook/sceneStore'
+import { useSceneStore } from '@/config/sceneStore'
 
 interface UseSceneNavigationOptions {
   scrollThreshold?: number

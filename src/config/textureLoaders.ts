@@ -1,5 +1,5 @@
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
-import { BASE_PATH } from '@/hook/basePath';
+import { BASE_PATH } from '@/config/basePath';
 
 /**
  * 모바일 환경 감지

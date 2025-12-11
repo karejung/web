@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useProgress } from "@react-three/drei";
-import { useSceneStore } from "@/hook/sceneStore";
+import { useSceneStore } from "@/config/sceneStore";
 import BackButton from "@/components/ui/BackButton";
 import Scene from "@/components/3d/Scene";
 import { Nav } from "@/components/ui/Nav";

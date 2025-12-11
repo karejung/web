@@ -4,7 +4,7 @@ import { useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Environment, OrbitControls } from "@react-three/drei";
 import * as THREE from "three/webgpu";
-import { useSceneStore } from "@/hook/sceneStore";
+import { useSceneStore } from "@/config/sceneStore";
 import { useSceneNavigation } from "@/hook/useSceneNavigation";
 import { GradientOverlay } from "@/components/ui/GradientOverlay";
 import { useScreenSize } from "@/hook/useScreenSize";
@@ -113,6 +113,12 @@ export default function Scene() {
       </Canvas>
       <GradientOverlay position="top" />
       <GradientOverlay position="bottom" />
+      <div 
+        className={`absolute inset-0 pointer-events-none backdrop-blur-xs transition-opacity duration-300 ${
+          isBlurred ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
+
     </div>
   );
 }

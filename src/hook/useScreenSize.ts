@@ -126,7 +126,7 @@ export function useScreenSize(): ResponsiveInfo {
     let scaleFactor = 1;
     
     if (width > 1440) scaleFactor = 1.2;
-    else if (width > 1024) scaleFactor = 1.05;
+    else if (width > 1024) scaleFactor = 1;
     else if (width > 768) scaleFactor = 0.9;
     else if (width > 480) scaleFactor = 0.8;
     else scaleFactor = 0.8;

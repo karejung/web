@@ -5,7 +5,7 @@ import { animated, useSpring } from "@react-spring/three";
 import { Model } from "./Model";
 import { Reflector } from "./Reflector";
 import { scenesData } from "@/data/scenes";
-import { useSceneStore } from "@/hook/sceneStore";
+import { useSceneStore } from "@/config/sceneStore";
 import { useScreenSize } from "@/hook/useScreenSize";
 import type { ModelConfig, ReflectorConfig } from "@/data/scenes";
 

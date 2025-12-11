@@ -2,7 +2,7 @@ import { useMemo, useEffect } from 'react'
 import * as THREE from 'three/webgpu'
 import { reflector, uniform } from 'three/tsl'
 import { useGLTF } from '@react-three/drei'
-import { BASE_PATH } from '@/hook/basePath'
+import { BASE_PATH } from '@/config/basePath'
 import { useScreenSize } from '@/hook/useScreenSize'
 import type { ReflectorItemConfig } from '@/data/scenes'
 
