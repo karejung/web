@@ -7,12 +7,12 @@
     {
       "type": "SCALAR",
       "componentType": 5123,
-      "count": 28905
+      "count": 28893
     },
     {
       "type": "VEC3",
       "componentType": 5126,
-      "count": 11293,
+      "count": 11286,
       "max": [
         1.68313729763031,
         2.514625310897827,
@@ -21,25 +21,60 @@
       "min": [
         -1.8168628215789795,
         0.01458171010017395,
+        -1.1916770935058594
+      ]
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 11286
+    },
+    {
+      "type": "VEC2",
+      "componentType": 5126,
+      "count": 11286
+    },
+    {
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 27
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 11,
+      "max": [
+        1.68313729763031,
+        0.014625310897827148,
+        1.7083230018615723
+      ],
+      "min": [
+        -1.8168628215789795,
+        0.014625309966504574,
         -1.1950492858886719
       ]
     },
     {
       "type": "VEC3",
       "componentType": 5126,
-      "count": 11293
+      "count": 11
     },
     {
       "type": "VEC2",
       "componentType": 5126,
-      "count": 11293
+      "count": 11
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteOffset": 0,
-      "byteLength": 58785
+      "byteLength": 58771
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 58771,
+      "byteLength": 258
     }
   ],
   "samplers": [
@@ -70,7 +105,7 @@
   "buffers": [
     {
       "uri": "model.bin",
-      "byteLength": 58785
+      "byteLength": 59029
     }
   ],
   "materials": [
@@ -119,6 +154,31 @@
           }
         }
       ]
+    },
+    {
+      "name": "Cube.008",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 5,
+            "NORMAL": 6,
+            "TEXCOORD_0": 7
+          },
+          "mode": 4,
+          "material": 0,
+          "indices": 4,
+          "extensions": {
+            "KHR_draco_mesh_compression": {
+              "bufferView": 1,
+              "attributes": {
+                "POSITION": 0,
+                "NORMAL": 1,
+                "TEXCOORD_0": 2
+              }
+            }
+          }
+        }
+      ]
     }
   ],
   "nodes": [
@@ -130,13 +190,23 @@
         -0.008322954177856445
       ],
       "mesh": 0
+    },
+    {
+      "name": "reflector",
+      "translation": [
+        0.06686270236968994,
+        -0.014625309966504574,
+        -0.008322954177856445
+      ],
+      "mesh": 1
     }
   ],
   "scenes": [
     {
       "name": "Scene",
       "nodes": [
-        0
+        0,
+        1
       ]
     }
   ],
