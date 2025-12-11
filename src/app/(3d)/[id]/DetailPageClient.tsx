@@ -16,3 +16,4 @@ export default function DetailPageClient({ params }: DetailPageClientProps) {
     </div>
   );
 }
+

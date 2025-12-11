@@ -7,19 +7,19 @@
     {
       "type": "SCALAR",
       "componentType": 5123,
-      "count": 99474
+      "count": 28905
     },
     {
       "type": "VEC3",
       "componentType": 5126,
-      "count": 27120,
+      "count": 11293,
       "max": [
         1.68313729763031,
         2.514625310897827,
         1.7240314483642578
       ],
       "min": [
-        -1.81686270236969,
+        -1.8168628215789795,
         0.01458171010017395,
         -1.1950492858886719
       ]
@@ -27,19 +27,19 @@
     {
       "type": "VEC3",
       "componentType": 5126,
-      "count": 27120
+      "count": 11293
     },
     {
       "type": "VEC2",
       "componentType": 5126,
-      "count": 27120
+      "count": 11293
     }
   ],
   "bufferViews": [
     {
       "buffer": 0,
       "byteOffset": 0,
-      "byteLength": 120128
+      "byteLength": 58785
     }
   ],
   "samplers": [
@@ -55,9 +55,6 @@
       "sampler": 0,
       "extensions": {
         "KHR_texture_basisu": {
-          "source": 1
-        },
-        "EXT_texture_webp": {
           "source": 0
         }
       }
@@ -65,12 +62,7 @@
   ],
   "images": [
     {
-      "name": "retopoBed_Baked_webp",
-      "mimeType": "image/webp",
-      "uri": "texture/retopoBed_Baked.webp"
-    },
-    {
-      "name": "retopoBed_Baked_ktx2",
+      "name": "retopoBed_Baked",
       "mimeType": "image/ktx2",
       "uri": "texture/retopoBed_Baked.ktx2"
     }
@@ -78,12 +70,12 @@
   "buffers": [
     {
       "uri": "model.bin",
-      "byteLength": 120128
+      "byteLength": 58785
     }
   ],
   "materials": [
     {
-      "name": "retopoBed_Baked_Baked.002",
+      "name": "retopoBed_Baked_Baked",
       "pbrMetallicRoughness": {
         "baseColorFactor": [
           0,
@@ -104,7 +96,7 @@
   ],
   "meshes": [
     {
-      "name": "Cube.009",
+      "name": "Cube.003",
       "primitives": [
         {
           "attributes": {
@@ -131,7 +123,7 @@
   ],
   "nodes": [
     {
-      "name": "model",
+      "name": "retopoBed_Baked_\bL",
       "translation": [
         0.06686270236968994,
         -0.014625309966504574,
@@ -150,7 +142,6 @@
   ],
   "scene": 0,
   "extensionsUsed": [
-    "EXT_texture_webp",
     "KHR_draco_mesh_compression",
     "KHR_texture_basisu"
   ],

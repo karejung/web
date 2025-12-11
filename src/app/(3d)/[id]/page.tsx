@@ -15,3 +15,4 @@ interface DetailPageProps {
 export default function DetailPage({ params }: DetailPageProps) {
   return <DetailPageClient params={params} />;
 }
+

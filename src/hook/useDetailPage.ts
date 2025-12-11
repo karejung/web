@@ -52,3 +52,4 @@ export function useDetailPage(paramsPromise: Promise<{ id: string }>) {
 
   return { modelId: id };
 }
+
