@@ -9,27 +9,15 @@ import { Nav } from "@/components/ui/Nav";
 import LoadingScreen from "@/components/ui/LoadingScreen";
 import Logo from "@/components/ui/Logo";
 
-const LOADING_COMPLETED_KEY = "alt_loading_completed";
-
 export default function Home() {
   const isDetailView = useSceneStore((state) => state.isDetailView);
   const { active, progress } = useProgress();
-  
-  const [isLoading, setIsLoading] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return sessionStorage.getItem(LOADING_COMPLETED_KEY) !== "true";
-  });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (sessionStorage.getItem(LOADING_COMPLETED_KEY) === "true") {
-      setIsLoading(false);
-      return;
-    }
-
     if (progress >= 100 && !active) {
       const timer = setTimeout(() => {
         setIsLoading(false);
-        sessionStorage.setItem(LOADING_COMPLETED_KEY, "true");
       }, 800);
       return () => clearTimeout(timer);
     }
